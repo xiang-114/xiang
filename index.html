@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101210">
+  <title>灯在山高处 · 致敬张桂梅老师</title>
+
+  <style>
+    :root {
+      --bg: #101210;
+      --paper: #eee7d9;
+      --muted: #bdb3a3;
+      --gold: #d6b77f;
+      --line: rgba(238, 231, 217, 0.28);
+      --font: "Songti SC", "STSong", "SimSun", "FangSong", serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      color: var(--paper);
+      background: var(--bg);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a,
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 5px;
+    }
+
+    .background-stage {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      background: var(--bg);
+      pointer-events: none;
+    }
+
+    .background-layer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      opacity: 0;
+      background:
+        radial-gradient(
+          ellipse at 65% 35%,
+          var(--glow, #514f3d),
+          transparent 70%
+        ),
+        #111210;
+      transition: opacity 1.2s ease;
+    }
+
+    .background-layer img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: var(--position, center);
+      filter: brightness(0.56) saturate(0.78);
+      opacity: 0;
+      transition: opacity 1.1s ease;
+    }
+
+    .background-layer.is-loaded img {
+      opacity: 1;
+    }
+
+    .background-layer.is-missing img {
+      display: none;
+    }
+
+    .background-shade {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(
+          180deg,
+          rgba(5, 8, 6, 0.45),
+          rgba(5, 8, 6, 0.36) 42%,
+          rgba(5, 8, 6, 0.88)
+        ),
+        linear-gradient(
+          90deg,
+          rgba(5, 8, 6, 0.82),
+          rgba(5, 8, 6, 0.5) 45%,
+          rgba(5, 8, 6, 0.2)
+        );
+    }
+
+    .site-label {
+      position: fixed;
+      top: 27px;
+      left: 32px;
+      z-index: 20;
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      text-shadow: 0 2px 12px #000;
+      pointer-events: none;
+    }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 30;
+      width: 100%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .progress-fill {
+      width: 100%;
+      height: 100%;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+    }
+
+    .scene {
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-height: 100svh;
+      padding: 112px 8vw 120px;
+      overflow: hidden;
+    }
+
+    .scene-copy {
+      position: relative;
+      z-index: 2;
+      width: min(50%, 690px);
+      margin: 0;
+    }
+
+    .chapter {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 0 0 25px;
+      color: var(--gold);
+      font-size: 12px;
+      line-height: 1.7;
+      letter-spacing: 0.24em;
+      text-shadow: 0 2px 14px #000;
+    }
+
+    .chapter::before {
+      width: 34px;
+      height: 1px;
+      flex: 0 0 auto;
+      background: currentColor;
+      content: "";
+    }
+
+    .scene-title {
+      max-width: 16em;
+      margin: 0 0 28px;
+      font-size: clamp(31px, 4.3vw, 60px);
+      font-weight: 400;
+      line-height: 1.5;
+      letter-spacing: 0.06em;
+      text-shadow: 0 3px 28px rgba(0, 0, 0, 0.8);
+      overflow-wrap: anywhere;
+    }
+
+    .scene-body {
+      max-width: 34em;
+      color: #e6dfd1;
+      font-size: clamp(17px, 1.55vw, 21px);
+      line-height: 2.05;
+      letter-spacing: 0.045em;
+      text-shadow: 0 2px 16px #000;
+      overflow-wrap: anywhere;
+    }
+
+    .scene-body p {
+      margin: 0 0 0.9em;
+    }
+
+    .scene-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .key {
+      color: #f5dfb2;
+    }
+
+    .scene-media {
+      position: absolute;
+      top: 50%;
+      right: 7vw;
+      z-index: 1;
+      width: min(38vw, 560px);
+      height: min(68vh, 620px);
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(12, 14, 12, 0.5);
+      box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.48),
+        0 0 0 1px rgba(255, 255, 255, 0.04);
+      transform: translateY(-50%);
+    }
+
+    .scene-media::after {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(
+          180deg,
+          rgba(7, 10, 8, 0.06),
+          rgba(7, 10, 8, 0.28)
+        ),
+        linear-gradient(
+          90deg,
+          rgba(7, 10, 8, 0.18),
+          transparent 55%
+        );
+      content: "";
+      pointer-events: none;
+    }
+
+    .scene-media img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: var(--media-position, center);
+      filter: saturate(0.88) brightness(0.94);
+      opacity: 0;
+      transform: scale(1.025);
+      transition:
+        opacity 1s ease,
+        transform 1.2s ease;
+    }
+
+    .scene-media.is-loaded img {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .scene-media.is-missing {
+      display: none;
+    }
+
+    .opening .scene-title {
+      max-width: none;
+      margin-bottom: 25px;
+      font-size: clamp(44px, 7vw, 98px);
+      line-height: 1.5;
+      letter-spacing: 0.12em;
+    }
+
+    .closing .scene-title {
+      max-width: 12em;
+      font-size: clamp(34px, 5.2vw, 70px);
+      line-height: 1.6;
+    }
+
+    .last-video-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      width: min(100%, 760px);
+      min-height: 180px;
+      margin-top: 38px;
+      padding: 32px;
+      border: 1px solid rgba(238, 231, 217, 0.3);
+      background:
+        linear-gradient(
+          135deg,
+          rgba(91, 45, 34, 0.86),
+          rgba(22, 25, 21, 0.94)
+        );
+      color: var(--paper);
+      text-decoration: none;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+      transition:
+        border-color 0.25s ease,
+        background 0.25s ease,
+        transform 0.25s ease;
+    }
+
+    .last-video-link:hover {
+      border-color: var(--gold);
+      background:
+        linear-gradient(
+          135deg,
+          rgba(121, 57, 42, 0.92),
+          rgba(22, 25, 21, 0.96)
+        );
+      transform: translateY(-3px);
+    }
+
+    .video-play-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 54px;
+      height: 54px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(238, 231, 217, 0.6);
+      border-radius: 50%;
+      color: var(--gold);
+      font-family: Arial, sans-serif;
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .video-link-text {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 19px;
+      letter-spacing: 0.12em;
+    }
+
+    .video-link-text small {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+
+    .return-link {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-decoration: none;
+    }
+
+    .scene-footer {
+      position: absolute;
+      right: 32px;
+      bottom: 29px;
+      left: 32px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-shadow: 0 2px 12px #000;
+      pointer-events: none;
+    }
+
+    .scene-footer span:last-child {
+      margin-right: 150px;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 34px;
+      left: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 11px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-decoration: none;
+      white-space: nowrap;
+      transform: translateX(-50%);
+    }
+
+    .scroll-hint span {
+      width: 1px;
+      height: 26px;
+      background: linear-gradient(var(--gold), transparent);
+      animation: breathe 2.8s ease-in-out infinite;
+    }
+
+    .reveal.is-pending {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition:
+        opacity 1.3s ease,
+        transform 1.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .audio-control {
+      position: fixed;
+      right: 25px;
+      bottom: max(20px, env(safe-area-inset-bottom));
+      z-index: 40;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-width: 122px;
+      min-height: 45px;
+      padding: 11px 16px;
+      border: 1px solid rgba(238, 231, 217, 0.3);
+      border-radius: 999px;
+      background: rgba(18, 20, 17, 0.88);
+      color: var(--paper);
+      font-family: var(--font);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+    }
+
+    .audio-control svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+    }
+
+    .audio-control [hidden] {
+      display: none;
+    }
+
+    .audio-status {
+      position: fixed;
+      right: 27px;
+      bottom: calc(max(20px, env(safe-area-inset-bottom)) + 58px);
+      z-index: 40;
+      max-width: 300px;
+      margin: 0;
+      color: var(--paper);
+      font-size: 12px;
+      line-height: 1.8;
+      text-align: right;
+      text-shadow: 0 2px 10px #000;
+      pointer-events: none;
+    }
+
+    @keyframes breathe {
+      0%, 100% {
+        opacity: 0.35;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 800px) {
+      .scene {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        gap: 32px;
+        min-height: auto;
+        padding: 94px 26px 125px;
+      }
+
+      .scene-copy {
+        width: 100%;
+      }
+
+      .scene-media {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: min(100%, 560px);
+        height: min(58svh, 430px);
+        margin: 0 auto;
+        transform: none;
+      }
+
+      .scene-media img {
+        object-position: var(--media-mobile-position, center);
+      }
+
+      .opening .scene-title {
+        font-size: clamp(42px, 11vw, 72px);
+      }
+
+      .scene-footer {
+        right: 22px;
+        bottom: 28px;
+        left: 22px;
+        font-size: 9px;
+      }
+
+      .scene-footer span:last-child {
+        margin-right: 130px;
+      }
+
+      .last-video-link {
+        width: 100%;
+        min-height: 150px;
+        margin-top: 30px;
+        padding: 26px 18px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .site-label {
+        top: 22px;
+        left: 21px;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+      }
+
+      .scene-body {
+        font-size: 17px;
+        line-height: 2;
+      }
+
+      .scene-media {
+        height: min(52svh, 350px);
+      }
+
+      .audio-control {
+        right: 15px;
+        min-width: 114px;
+      }
+
+      .video-link-text {
+        font-size: 16px;
+      }
+
+      .video-link-text small {
+        font-size: 11px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .background-layer,
+      .background-layer img,
+      .scene-media img,
+      .reveal.is-visible {
+        transition: none;
+      }
+
+      .scroll-hint span {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="background-stage" id="backgroundStage" aria-hidden="true">
+    <div class="background-shade"></div>
+  </div>
+
+  <p class="site-label">灯在山高处 · 致敬张桂梅老师</p>
+
+  <div class="progress" aria-hidden="true">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <main id="story"></main>
+
+  <audio id="backgroundMusic" loop preload="none">
+    <source
+      src="https://lazyman.yixiaai.com/files/497890/1b3c7a3f-8dde-45e0-b8d7-c12d792450c5.mp3"
+      type="audio/mpeg"
+    >
+  </audio>
+
+  <button
+    class="audio-control"
+    id="audioToggle"
+    type="button"
+    aria-label="播放背景音乐"
+    aria-pressed="false"
+  >
+    <svg id="playIcon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 4.5v15l12-7.5z"></path>
+    </svg>
+
+    <svg id="pauseIcon" viewBox="0 0 24 24" aria-hidden="true" hidden>
+      <path d="M6 4h4v16H6zm8 0h4v16h-4z"></path>
+    </svg>
+
+    <span id="audioLabel">播放音乐</span>
+  </button>
+
+  <p class="audio-status" id="audioStatus" aria-live="polite"></p>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const IMAGES = {
+        visitTable:
+          "https://lazyman.yixiaai.com/files/497892/7d7d66af-2a91-49e9-91be-3de00d194c17.png",
+
+        redPortrait:
+          "https://lazyman.yixiaai.com/files/497892/dec279e6-8b81-4221-88f2-f7dbbbe45a00.png",
+
+        calligraphy:
+          "https://lazyman.yixiaai.com/files/497892/2f6c2362-8bd8-4edd-9fac-ce2145254439.png",
+
+        classroom:
+          "https://lazyman.yixiaai.com/files/497892/22f199cd-b452-475a-8341-b2e4dacf86ac.jpg",
+
+        megaphone:
+          "https://lazyman.yixiaai.com/files/497892/6bc435da-a231-40b1-926b-4a0ba8f5183e.png",
+
+        visitCourtyard:
+          "https://lazyman.yixiaai.com/files/497892/63bf0a36-b910-4f11-b2e8-065f389570cf.png",
+
+        deskWork:
+          "https://lazyman.yixiaai.com/files/497892/e6645a72-2750-489b-96e9-084d0dfad7b6.png",
+
+        graduate:
+          "https://lazyman.yixiaai.com/files/497892/6f7cbe60-19b2-42bd-b167-89015832f826.png"
+      };
+
+      const BILIBILI_URL =
+        "https://www.bilibili.com/blackboard/webplayer/mbplayer.html?bvid=BV1yj411W7qP&p=1&autoplay=true";
+
+      const SCENES = [
+        {
+          chapter: "序 · 引言",
+          title: "灯在山高处",
+          body: [
+            "在滇西北的层峦叠嶂里，大山曾把路藏了起来，把女孩们的命运困在了猪圈和农田。但有一位瘦弱的老人，用一盏微光，在绝壁上凿出了一条通往未来的路。",
+            "致敬张桂梅老师，致敬每一位点亮大山的人。"
+          ],
+          image: IMAGES.redPortrait,
+          position: "center",
+          mobilePosition: "62% center",
+          glow: "#702d20"
+        },
+        {
+          chapter: "一 · 找",
+          title: "大山曾把路藏起来",
+          body: [
+            "她一次次走进深山，手电筒的光在晨雾里摇晃。泥泞的红土路上，布鞋磨破了一双又一双。她蹲在破旧的土坯房前，握住女孩满是冻疮的手，把煮熟的鸡蛋塞进她的口袋。",
+            "“跟我走吧，把书读出来。”",
+            "这不仅是家访，更是在与愚昧和贫穷抢夺生命。"
+          ],
+          image: IMAGES.visitCourtyard,
+          position: "center",
+          mobilePosition: "78% center",
+          glow: "#76533a"
+        },
+        {
+          chapter: "二 · 守",
+          title: "一个都不能少",
+          body: [
+            "凌晨的办公室，廊灯用麻绳捆着防震，桌上的台灯是深夜里唯一的光。她伏案记录着学生的名字，指节粗大，指甲缝里满是粉笔灰。手背贴满膏药，旁边放着止痛药和吸氧机。",
+            "她把学生的名字写进深夜的灯里，也写进了自己的生命里。",
+            "她不是铁人，她只是不肯倒下。"
+          ],
+          image: IMAGES.deskWork,
+          position: "center",
+          mobilePosition: "61% center",
+          glow: "#44362d"
+        },
+        {
+          chapter: "三 · 办学",
+          title: "没有路，就蹚出一条路",
+          body: [
+            "没有校舍，没有资金，没有老师。她在街头募捐，被人当成骗子吐口水，也咬牙坚持。她想建一所全免费的女子高中，让大山里的女孩有书读。",
+            "斑驳的黑板上，她用粉笔重重地写下“知识改变命运”。",
+            "没有学校，她就用血肉之躯把学校办起来。"
+          ],
+          image: IMAGES.visitTable,
+          position: "center",
+          mobilePosition: "64% center",
+          glow: "#4f5148"
+        },
+        {
+          chapter: "四 · 清晨",
+          title: "清晨的小喇叭",
+          body: [
+            "天还没亮，清脆的小喇叭声划破了女高的宁静。",
+            "“起床啦！跑起来！”",
+            "女孩们穿着红色的校服，像一股充满生机的红色水流涌向操场。那个拿着小喇叭的瘦小背影，喊醒的不只是清晨的睡意，还有一群女孩蛰伏已久的未来。"
+          ],
+          image: IMAGES.megaphone,
+          position: "center",
+          mobilePosition: "24% center",
+          glow: "#713d31"
+        },
+        {
+          chapter: "五 · 课堂",
+          title: "山外有更大的世界",
+          body: [
+            "阳光斜射进教室，粉笔灰在光柱里浮动。女孩们齐声朗读的声音，是这大山里最动听的回响。她静静站在窗外，看着那一双双明亮的眼睛。",
+            "她想让她们知道，女孩的人生不只有嫁人和生娃，山外有更广阔的天空，她们生来就该飞翔。"
+          ],
+          image: IMAGES.classroom,
+          position: "center",
+          mobilePosition: "72% center",
+          glow: "#806744"
+        },
+        {
+          chapter: "六 · 守望",
+          title: "站在路口的守望",
+          body: [
+            "高考的清晨，她依然举着那个熟悉的小喇叭。她站在校门外的路口，看着女孩们像一股红色的洪流，奔向属于她们的战场。她挥着手，一遍遍喊着加油。",
+            "人群渐渐远去，她瘦弱的身躯依然久久地立在那里，目光一直追随着她们，直到再也看不见。",
+            "她把所有的孩子，都送出了大山。"
+          ],
+          image: IMAGES.megaphone,
+          position: "40% center",
+          mobilePosition: "35% center",
+          glow: "#6b3b32"
+        },
+        {
+          chapter: "七 · 远方",
+          title: "她们走向远方",
+          body: [
+            "十几年过去了，女孩们走出了大山，走向了各自的远方。",
+            "后来，她们穿上了白大褂，在病房里救死扶伤；她们站上了讲台，成了点亮别人的乡村教师；她们穿上了军装，建起了桥梁，成为了建设祖国的新力量。",
+            "那盏灯，终于变成了满天星。"
+          ],
+          image: IMAGES.graduate,
+          position: "center",
+          mobilePosition: "43% center",
+          glow: "#45616a"
+        },
+        {
+          chapter: "八 · 升华",
+          title: "什么是中国精神？",
+          body: [
+            "中国精神是什么？是把孩子举过肩头，是把希望种进大山，是平凡人把沉甸甸的责任扛在肩上。",
+            "是用一生的心血，去践行一句承诺；是用一己之力，去改变一代人的命运。",
+            "坚韧、纯粹、无私、大爱。"
+          ],
+          image: IMAGES.calligraphy,
+          position: "center",
+          mobilePosition: "center",
+          glow: "#59604c"
+        },
+        {
+          chapter: "尾声 · 高山",
+          title: "我生来就是高山而非溪流",
+          body: [
+            "我生来就是高山而非溪流，我欲于群峰之巅俯视平庸的沟壑；我生来就是人杰而非草芥，我站在伟人之肩藐视卑微的懦夫。",
+            "致敬张桂梅老师。"
+          ],
+          image: IMAGES.redPortrait,
+          position: "65% center",
+          mobilePosition: "68% center",
+          glow: "#7c321f"
+        }
+      ];
+
+      const story = document.getElementById("story");
+      const stage = document.getElementById("backgroundStage");
+      const progressFill = document.getElementById("progressFill");
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      );
+
+      const sections = [];
+      const layers = [];
+
+      function createScene(scene, index) {
+        const section = document.createElement("section");
+        section.className = "scene";
+        section.id = `scene-${index + 1}`;
+
+        if (index === 0) {
+          section.classList.add("opening");
+        }
+
+        if (index === SCENES.length - 1) {
+          section.classList.add("closing");
+        }
+
+        const copy = document.createElement("div");
+        copy.className = "scene-copy reveal";
+
+        const chapter = document.createElement("p");
+        chapter.className = "chapter";
+        chapter.textContent = scene.chapter;
+
+        const title = document.createElement(index === 0 ? "h1" : "h2");
+        title.className = "scene-title";
+        title.textContent = scene.title;
+
+        const body = document.createElement("div");
+        body.className = "scene-body";
+
+        scene.body.forEach((text, paragraphIndex) => {
+          const paragraph = document.createElement("p");
+          paragraph.textContent = text;
+
+          if (
+            paragraphIndex === scene.body.length - 1 ||
+            text.includes("跟我走吧") ||
+            text.includes("起床啦")
+          ) {
+            paragraph.className = "key";
+          }
+
+          body.appendChild(paragraph);
+        });
+
+        copy.append(chapter, title, body);
+
+        if (index === SCENES.length - 1) {
+          const videoLink = document.createElement("a");
+          videoLink.className = "last-video-link";
+          videoLink.href = BILIBILI_URL;
+          videoLink.target = "_blank";
+          videoLink.rel = "noopener noreferrer";
+          videoLink.setAttribute(
+            "aria-label",
+            "点击前往哔哩哔哩观看视频"
+          );
+
+          videoLink.innerHTML = `
+            <span class="video-play-icon" aria-hidden="true">▶</span>
+            <span class="video-link-text">
+              <span>点击观看视频</span>
+              <small>前往哔哩哔哩播放</small>
+            </span>
+          `;
+
+          copy.appendChild(videoLink);
+
+          const returnLink = document.createElement("a");
+          returnLink.className = "return-link";
+          returnLink.href = "#scene-1";
+          returnLink.textContent = "回到灯亮的地方 ↑";
+          copy.appendChild(returnLink);
+        }
+
+        const media = document.createElement("figure");
+        media.className = "scene-media";
+        media.style.setProperty("--media-position", scene.position);
+        media.style.setProperty(
+          "--media-mobile-position",
+          scene.mobilePosition
+        );
+
+        const image = document.createElement("img");
+        image.src = scene.image;
+        image.alt = "";
+        image.loading = index < 2 ? "eager" : "lazy";
+        image.decoding = "async";
+
+        image.addEventListener("load", () => {
+          media.classList.add("is-loaded");
+        });
+
+        image.addEventListener("error", () => {
+          media.classList.add("is-missing");
+        });
+
+        media.appendChild(image);
+
+        const footer = document.createElement("div");
+        footer.className = "scene-footer";
+        footer.innerHTML = `
+          <span>灯在山高处</span>
+          <span>${String(index + 1).padStart(2, "0")} / 10</span>
+        `;
+
+        section.append(copy, media, footer);
+
+        if (index === 0) {
+          const hint = document.createElement("a");
+          hint.className = "scroll-hint";
+          hint.href = "#scene-2";
+          hint.innerHTML = `
+            向下，走进大山
+            <span aria-hidden="true"></span>
+          `;
+          section.appendChild(hint);
+        }
+
+        story.appendChild(section);
+        sections.push(section);
+      }
+
+      function createBackground(scene, index) {
+        const layer = document.createElement("div");
+        layer.className = "background-layer";
+        layer.style.setProperty("--position", scene.position);
+        layer.style.setProperty("--glow", scene.glow);
+
+        const image = document.createElement("img");
+        image.src = scene.image;
+        image.alt = "";
+        image.decoding = "async";
+
+        if (index === 0) {
+          image.fetchPriority = "high";
+        }
+
+        image.addEventListener("load", () => {
+          layer.classList.add("is-loaded");
+        });
+
+        image.addEventListener("error", () => {
+          layer.classList.add("is-missing");
+        });
+
+        layer.appendChild(image);
+        stage.insertBefore(layer, stage.firstElementChild);
+        layers.push(layer);
+      }
+
+      SCENES.forEach((scene, index) => {
+        createScene(scene, index);
+        createBackground(scene, index);
+      });
+
+      const revealElements = document.querySelectorAll(".reveal");
+
+      if (reducedMotion.matches) {
+        revealElements.forEach((element) => {
+          element.classList.add("is-visible");
+        });
+      } else if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) {
+                return;
+              }
+
+              entry.target.classList.remove("is-pending");
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            });
+          },
+          { threshold: 0.04 }
+        );
+
+        revealElements.forEach((element) => {
+          element.classList.add("is-pending");
+          observer.observe(element);
+        });
+      } else {
+        revealElements.forEach((element) => {
+          element.classList.add("is-visible");
+        });
+      }
+
+      let sectionTops = [];
+      let scrollRange = 1;
+      let framePending = false;
+
+      function measure() {
+        sectionTops = sections.map((section) => section.offsetTop);
+        scrollRange = Math.max(
+          1,
+          document.documentElement.scrollHeight - window.innerHeight
+        );
+      }
+
+      function smoothstep(value) {
+        const t = Math.max(0, Math.min(1, value));
+        return t * t * (3 - 2 * t);
+      }
+
+      function updateBackground() {
+        framePending = false;
+
+        const focusY = window.scrollY + window.innerHeight * 0.5;
+        let current = 0;
+
+        while (
+          current < sections.length - 1 &&
+          focusY >= sectionTops[current + 1]
+        ) {
+          current++;
+        }
+
+        const next = Math.min(current + 1, layers.length - 1);
+
+        layers.forEach((layer, index) => {
+          layer.style.opacity = index === current ? "1" : "0";
+        });
+
+        if (next !== current && !reducedMotion.matches) {
+          const boundary = sectionTops[next];
+          const distance = Math.max(
+            1,
+            Math.min(
+              window.innerHeight * 0.7,
+              boundary - sectionTops[current]
+            )
+          );
+
+          const start = boundary - distance;
+          const amount = smoothstep((focusY - start) / distance);
+          layers[next].style.opacity = String(amount);
+        }
+
+        progressFill.style.transform =
+          `scaleX(${Math.min(1, window.scrollY / scrollRange)})`;
+      }
+
+      function requestBackgroundUpdate() {
+        if (framePending) {
+          return;
+        }
+
+        framePending = true;
+        requestAnimationFrame(updateBackground);
+      }
+
+      measure();
+      updateBackground();
+
+      window.addEventListener("scroll", requestBackgroundUpdate, {
+        passive: true
+      });
+
+      window.addEventListener("resize", () => {
+        measure();
+        requestBackgroundUpdate();
+      });
+
+      window.addEventListener("load", () => {
+        measure();
+        requestBackgroundUpdate();
+      });
+
+      const audio = document.getElementById("backgroundMusic");
+      const audioToggle = document.getElementById("audioToggle");
+      const audioLabel = document.getElementById("audioLabel");
+      const audioStatus = document.getElementById("audioStatus");
+      const playIcon = document.getElementById("playIcon");
+      const pauseIcon = document.getElementById("pauseIcon");
+
+      audio.volume = 0.45;
+
+      function syncAudioButton() {
+        const playing = !audio.paused && !audio.ended;
+
+        audioToggle.setAttribute(
+          "aria-label",
+          playing ? "暂停背景音乐" : "播放背景音乐"
+        );
+
+        audioToggle.setAttribute("aria-pressed", String(playing));
+        audioLabel.textContent = playing ? "暂停音乐" : "播放音乐";
+        playIcon.hidden = playing;
+        pauseIcon.hidden = !playing;
+      }
+
+      audioToggle.addEventListener("click", async () => {
+        if (!audio.paused) {
+          audio.pause();
+          audioStatus.textContent = "";
+          syncAudioButton();
+          return;
+        }
+
+        audioStatus.textContent = "音乐加载中……";
+
+        try {
+          await audio.play();
+          audioStatus.textContent = "";
+        } catch (error) {
+          audioStatus.textContent =
+            "音乐暂时无法播放，请再次点击按钮或检查网络。";
+        }
+
+        syncAudioButton();
+      });
+
+      audio.addEventListener("play", syncAudioButton);
+      audio.addEventListener("pause", syncAudioButton);
+
+      audio.addEventListener("error", () => {
+        audioStatus.textContent = "音乐加载失败，请检查网络后重试。";
+        syncAudioButton();
+      });
+
+      syncAudioButton();
+    })();
+  </script>
+</body>
+</html>
